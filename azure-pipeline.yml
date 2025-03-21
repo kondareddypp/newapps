@@ -1,0 +1,13 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: Docker@2
+  inputs:
+    containerRegistry: '<DockerHub-ServiceConnection>'
+    repository: 'kdockt/newapps'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
