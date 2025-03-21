@@ -1,0 +1,24 @@
+stages:
+- stage: BlueDeployment
+  jobs:
+  - job: DeployToBlue
+    steps:
+    - task: Kubernetes@1
+      inputs:
+        kubernetesServiceConnection: '<AKS-ServiceConnection>'
+        namespace: 'blue'
+        command: 'apply'
+        arguments: '-f deployment.yaml'
+
+- stage: GreenDeployment
+  dependsOn: BlueDeployment
+  condition: succeeded()
+  jobs:
+  - job: DeployToGreen
+    steps:
+    - task: Kubernetes@1
+      inputs:
+        kubernetesServiceConnection: '<AKS-ServiceConnection>'
+        namespace: 'green'
+        command: 'apply'
+        arguments: '-f deployment.yaml'
