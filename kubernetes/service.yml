@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: newapps-service
+  name: sample-web-app-service
   namespace: blue
 spec:
   selector:
-    app: newapps
+    app: sample-web-app
   ports:
   - protocol: TCP
-    port: 80
-    targetPort: 3000
-  type: ClusterIP
+    port: 80         # The port the service exposes externally
+    targetPort: 3000 # The port on the container to route to
+  type: LoadBalancer # Or NodePort, depending on your setup
