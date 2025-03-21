@@ -1,24 +1,24 @@
-stages:
-- stage: BlueDeployment
-  jobs:
-  - job: DeployToBlue
-    steps:
-    - task: Kubernetes@1
-      inputs:
-        kubernetesServiceConnection: '<AKS-ServiceConnection>'
-        namespace: 'blue'
-        command: 'apply'
-        arguments: '-f deployment.yaml'
-
-- stage: GreenDeployment
-  dependsOn: BlueDeployment
-  condition: succeeded()
-  jobs:
-  - job: DeployToGreen
-    steps:
-    - task: Kubernetes@1
-      inputs:
-        kubernetesServiceConnection: '<AKS-ServiceConnection>'
-        namespace: 'green'
-        command: 'apply'
-        arguments: '-f deployment.yaml'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-web-app
+  namespace: blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sample-web-app
+  template:
+    metadata:
+      labels:
+        app: sample-web-app
+    spec:
+      containers:
+      - name: sample-web-app
+        image: kdockt/sample-web-app:latest # Replace with your Docker Hub image
+        ports:
+        - containerPort: 3000
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
