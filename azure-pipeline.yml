@@ -31,6 +31,19 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
+
+  variables:
+  - name: ACR_USERNAME
+    value: $(ACR_USERNAME)
+  - name: ACR_PASSWORD
+    value: $(ACR_PASSWORD)
+
+steps:
+  - script: |
+      docker login $(ACR_LOGIN_SERVER) -u $(ACR_USERNAME) -p $(ACR_PASSWORD)
+      docker build -t $(ACR_LOGIN_SERVER)/my-python-app:latest .
+      docker push $(ACR_LOGIN_SERVER)/my-python-app:latest
+
     - script: |
         az aks get-credentials --resource-group $(resourceGroup) --name $(clusterName)
         kubectl apply -f deployment.yaml
