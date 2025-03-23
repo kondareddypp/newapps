@@ -1,13 +1,38 @@
 trigger:
 - main
 
-pool:
-  vmImage: 'ubuntu-latest'
+variables:
+  # Docker image and Kubernetes settings
+  imageName: my-python-app
+  registry: kondareddyacr.azurecr.io
+  clusterName: MyAKSCluster
+  resourceGroup: MyResourceGroup
 
-steps:
-- task: Docker@2
-  inputs:
-    containerRegistry: '<DockerHub-ServiceConnection>'
-    repository: 'kdockt/newapps'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
+stages:
+- stage: BuildAndPush
+  displayName: Build and Push Docker Image
+  jobs:
+  - job: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: DockerInstaller@0
+      displayName: Install Docker
+    - script: |
+        docker build -t $(registry)/$(imageName):$(Build.BuildId) .
+        docker login $(registry) -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
+        docker push $(registry)/$(imageName):$(Build.BuildId)
+      displayName: Build and Push Docker Image
+
+- stage: Deploy
+  displayName: Deploy to AKS
+  jobs:
+  - job: DeployToKubernetes
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        az aks get-credentials --resource-group $(resourceGroup) --name $(clusterName)
+        kubectl apply -f deployment.yaml
+        kubectl apply -f service.yaml
+      displayName: Deploy to AKS
